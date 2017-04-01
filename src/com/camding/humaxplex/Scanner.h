@@ -15,16 +15,20 @@ namespace com {
 namespace camding {
 namespace humaxplex {
 
+class Options;
+
 class Scanner : public std::enable_shared_from_this<Scanner> {
 public:
-  Scanner();
+  Scanner(const Options& options);
   virtual ~Scanner();
 
+  void Init();
   void Scan();
 
 private:
   static std::vector<std::string> DEVICE_CATEGORY_STR;
-  UpnpClient_Handle client_;
+  bool initialized_ = false;
+  UpnpClient_Handle client_ = 0;
   int UpnpCallback(Upnp_EventType EventType, void *Event);
 };
 

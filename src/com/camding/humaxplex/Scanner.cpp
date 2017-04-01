@@ -5,6 +5,7 @@
  *      Author: chrisd
  */
 
+#include "Options.h"
 #include "Scanner.h"
 #include <string>
 
@@ -20,9 +21,16 @@ enum DEVICETYPE{
   RENDERER
 };
 
-Scanner::Scanner() {
-  std::weak_ptr<Scanner>* selfPtr = new std::weak_ptr<Scanner>(shared_from_this());
+Scanner::Scanner(const Options& options) {
+  /* Not used */
+}
 
+Scanner::~Scanner() {
+  UpnpUnRegisterClient(client_);
+}
+
+void Scanner::Init() {
+  std::weak_ptr<Scanner>* selfPtr = new std::weak_ptr<Scanner>(shared_from_this());
   auto callback = [](Upnp_EventType EventType, void* Event, void* Cookie) -> int{
     auto self = static_cast<std::weak_ptr<Scanner>*>(Cookie);
     auto selfLocked = self->lock();
@@ -34,16 +42,19 @@ Scanner::Scanner() {
   if (UpnpRegisterClient(callback, selfPtr, &client_) != UPNP_E_SUCCESS) {
     throw std::runtime_error("Failed to register upnp client");
   }
-  if (UpnpSearchAsync(client_, 15, DEVICE_CATEGORY_STR.at(DEVICETYPE::SERVER).c_str(), nullptr) != UPNP_E_SUCCESS) {
-    throw std::runtime_error("Failed to search for upnp");
-  }
-}
-
-Scanner::~Scanner() {
-  UpnpUnRegisterClient(client_);
+  initialized_ = true;
 }
 
 int Scanner::UpnpCallback(Upnp_EventType EventType, void *Event) {
   //FIXME code this
   return UPNP_E_SUCCESS;
+}
+
+void Scanner::Scan() {
+  if (!initialized_)
+    Init();
+  if (UpnpSearchAsync(client_, 15, DEVICE_CATEGORY_STR.at(DEVICETYPE::SERVER).c_str(), nullptr) != UPNP_E_SUCCESS) {
+    throw std::runtime_error("Failed to search for upnp");
+  }
+  //FIXME code this
 }

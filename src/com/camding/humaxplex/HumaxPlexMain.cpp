@@ -94,6 +94,9 @@ int HumaxPlexMain::ProcessCommandLineArgs(int argc, char* argv[]) {
 
 int HumaxPlexMain::Run(int argc, char* argv[]) {
   ProcessCommandLineArgs(argc, argv);
-  DBAccess database(options_);
+  auto database=std::make_shared<DBAccess>(options_);
+  auto scanner=std::make_shared<Scanner>(options_);
+  scanner->Init();
+  scanner->Scan();
   return 0;
 }
